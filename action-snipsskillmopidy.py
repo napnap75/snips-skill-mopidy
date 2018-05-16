@@ -30,21 +30,32 @@ def read_configuration_file(configuration_file):
     except (IOError, ConfigParser.Error) as e:
         return dict()
 
+
+def subscribe_session_started_callback(hermes, intentMessage):
+    hermes.skill.set_to_low_volume()
+
+
 def addSong_callback(hermes, intentMessage):
     pass
 
 def getInfos_callback(hermes, intentMessage):
     tts_sentence = "This is {} by {} on the album {}".format(*hermes.skill.get_info())
     hermes.publish_end_session(intentMessage.session_id, tts_sentence)
+    hermes.skill.set_to_previous_volume()
 
 def nextSong_callback(hermes, intentMessage):
     hermes.skill.next_song()
+    hermes.skill.set_to_previous_volume()
 
 def playAlbum_callback(hermes, intentMessage):
     if len(intentMessage.slots.album_name):
         album_name = intentMessage.slots.album_name.first().value
         hermes.skill.play_album(album_name, shuffle=(
                     len(intentMessage.slots.album_lecture_mode) and intentMessage.slots.album_lecture_mode.first().value == "shuffle"))
+    else:
+        tts_sentence = "Sorry, I didn't find any album with the name I understood. Please try again."
+
+    hermes.skill.set_to_previous_volume()
 
 
 def playArtist_callback(hermes, intentMessage):
@@ -52,30 +63,45 @@ def playArtist_callback(hermes, intentMessage):
         artist_name = intentMessage.slots.artist_name.first().value
         hermes.skill.play_artist(artist_name)
 
+    hermes.skill.set_to_previous_volume()
+
 def playPlaylist_callback(hermes, intentMessage):
     if len(intentMessage.slots.playlist_name):
         playlist_name = intentMessage.slots.playlist_name.first().value
         hermes.skill.play_playlist(playlist_name, shuffle=(
                     len(intentMessage.slots.playlist_lecture_mode) and intentMessage.slots.playlist_lecture_mode.first().value == "shuffle"))
 
+    hermes.skill.set_to_previous_volume()
+
 
 def playSong_callback(hermes, intentMessage):
     if len(intentMessage.slots.song_name):
+        
         hermes.skill.play_song(intentMessage.slots.song_name.first().value)
+    else:
+        tts_sentence = "Sorry, I didn't find any song with the name I understood. Please try again."
+        hermes.publish_end_session(intentMessage.session_id, tts_sentence)
+
+    hermes.skill.set_to_previous_volume()
 
 def previousSong_callback(hermes, intentMessage):
     hermes.skill.previous_song()
+    hermes.skill.set_to_previous_volume()
 
 def radioOn_callback(hermes, intentMessage):
     pass
 
 def resumeMusic_callback(hermes, intentMessage):
     hermes.skill.play()
+    hermes.skill.set_to_previous_volume()
 
 def speakerInterrupt_callback(hermes, intentMessage):
     hermes.skill.pause()
+    hermes.skill.set_to_previous_volume()
 
 def volumeDown_callback(hermes, intentMessage):
+    hermes.skill.set_to_previous_volume()
+
     if len(intentMessage.slots.volume_lower):
         volume_lower = intentMessage.slots.volume_lower.first().value
         hermes.skill.volume_down(volume_lower)
@@ -84,11 +110,12 @@ def volumeDown_callback(hermes, intentMessage):
 
 def volumeUp_callback(hermes, intentMessage):
     hermes.skill.set_to_previous_volume()
+
     if len(intentMessage.slots.volume_lower):
         volume_lower = intentMessage.slots.volume_lower.first().value
-        hermes.skill.volume_down(volume_lower)
+        hermes.skill.volume_up(volume_lower)
     else:
-        hermes.skill.volume_down(None)
+        hermes.skill.volume_up(None)
 
 
 if __name__ == "__main__":
@@ -98,6 +125,7 @@ if __name__ == "__main__":
         h.skill = SnipsMopidy(MOPIDY_HOST)
 
         h\
+            .subscribe_session_started(subscribe_session_started_callback) \
             .subscribe_intent("volumeUp", volumeUp_callback) \
             .subscribe_intent("previousSong", previousSong_callback) \
             .subscribe_intent("playSong", playSong_callback) \

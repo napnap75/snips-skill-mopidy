@@ -59,13 +59,14 @@ class SnipsMopidy:
         self.client.previous_volume = current_volume
         self.client.set_volume(min(30, current_volume))
 
-    def set_to_previous_volume(self):
+    def set_to_previous_volume(self, resume_playback=False):
         if self.client.previous_volume is None:
             return None
         self.client.set_volume(self.client.previous_volume)
-        status = self.client.get_status()
-        if status != 'playing':
-            self.client.play()
+        if resume_playback:
+            status = self.client.get_status()
+            if status != 'playing':
+                self.client.play()
 
     def next_song(self):
         self.client.next_song()
