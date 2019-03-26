@@ -136,6 +136,11 @@ class MopidyClient:
         spotify['uris'] = ['spotify:']
         return self.search(spotify)
 
+    def search_tunein(self, parameters):
+        tunein = parameters.copy()
+        tunein['uris'] = ['tunein:station:']
+        return self.search(tunein)
+
     def search_any(self, search_term):
         return self.search_spotify({'any': [search_term]})
 
@@ -152,6 +157,9 @@ class MopidyClient:
 
     def search_track(self, track):
         return self.search_spotify({'track_name': [track]})
+
+    def search_radio(self, radio):
+        return self.search_tunein({'any': [radio]})
 
     def add_to_tracklist(self, tracks=None, uris=None):
         if tracks is not None:

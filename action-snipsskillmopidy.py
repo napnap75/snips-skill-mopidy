@@ -63,7 +63,8 @@ def previousSong_callback(hermes, intentMessage):
     hermes.skill.previous_song()
 
 def radioOn_callback(hermes, intentMessage):
-    pass
+    if len(intentMessage.slots.radio_name_fr):
+        hermes.skill.play_radio(intentMessage.slots.radio_name_fr.first().value)
 
 def resumeMusic_callback(hermes, intentMessage):
     hermes.skill.play()

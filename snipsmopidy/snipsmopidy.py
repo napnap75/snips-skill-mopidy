@@ -116,3 +116,8 @@ class SnipsMopidy:
                 self.client.shuffle()
             self.client.play_first()
 
+    def play_radio(self, name):
+        is_set = self.client.set_search(self.client.search_radio(name))
+        if is_set:
+            self.client.play_first()
+
