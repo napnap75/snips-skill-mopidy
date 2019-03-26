@@ -48,7 +48,10 @@ class MopidyClient:
             data=json.dumps(
                 json_rpc,
                 cls=mopidy.models.ModelJSONEncoder
-            )
+            ),
+            headers={
+                'Content-Type': 'application/json'
+            }
         )
 
         decoded = json.loads(

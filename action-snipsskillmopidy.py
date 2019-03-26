@@ -11,10 +11,6 @@ from snipsmopidy.snipsmopidy import SnipsMopidy
 CONFIGURATION_ENCODING_FORMAT = "utf-8"
 CONFIG_INI = "config.ini"
 
-HOSTNAME = "localhost"
-
-HERMES_HOST = "{}:1883".format(HOSTNAME)
-MOPIDY_HOST = HOSTNAME
 
 class SnipsConfigParser(ConfigParser.SafeConfigParser):
     def to_dict(self):
@@ -93,9 +89,13 @@ def volumeUp_callback(hermes, intentMessage):
 
 if __name__ == "__main__":
 
+    config = read_configuration_file(CONFIG_INI)
+
+    HERMES_HOST = "{}:{}".format(config.get('global').get('mqtt-host'), config.get('global').get('mqtt-port'))
+
     with Hermes(HERMES_HOST) as h:
 
-        h.skill = SnipsMopidy(MOPIDY_HOST)
+        h.skill = SnipsMopidy(config.get('secret').get('mopidy-host'))
 
         h\
             .subscribe_intent("volumeUp", volumeUp_callback) \
